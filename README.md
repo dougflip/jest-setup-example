@@ -1,44 +1,58 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Jest Setup Example
+===================
 
-## Available Scripts
+This project experiments with an alternative to `beforeEach` when testing.
+This wraps `it`, `it.only`, and `it.skip` to allow for 3 arguments:
 
-In the project directory, you can run:
+1. The title of your test
+2. An object or function that provide data to your test (more on that later)
+3. The test itself that receives data as its argument
 
-### `npm start`
+```javascript
+it('accepts a setup function', generateMockUser, ({ user }) => {
+  // test your mock user here just like normal
+});
+```
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Background
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+For me, `beforeEach` works fine for setup code that is very side effect oriented.
+These are "fire and forget" functions such as stubbing out the network or resetting a mock.
+I think `beforeEach` starts to break down when we want to _produce data_ that our tests will consume.
+The pattern I've seen most results in a laundry list of `let` declarations that are (re)assigned as
+part of the `beforeEach` callback.
 
-### `npm test`
+```javascript
+let testUserId;
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+beforeEach(() => {
+  testUserId = 123;
+});
+```
 
-### `npm run build`
+With only a few items this isn't so bad, but as a test file starts to grow this can become hard
+to follow and maintain.
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Proposal
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+What would be nice is to have a function produce data that is fed to our test.
+This has a few benefits:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. We can use standard function composition to deal with complex setups.
+2. There's no longer a need for `let` variables since data is given to your test as local variables
+3. Setup functions can easily be moved out of a test because they don't interact with local scope
+4. We can also define a teardown function associated to the setup to bundle them together.
 
-### `npm run eject`
+This repo is a Proof of Concept to see what testing in this manner would look like.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Test Examples
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The examples are in [./src/App.test.js](./src/App.test.js) and runnable via `yarn test`.
+They are basic now, but I hope to add some more complex examples to see how this pattern scales.
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Implementation
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+The actual implementation is in [./src/setupTests.js](./src/setupTests.js) and relies on wrapping
+the existing jest methods. I actually think this could work to some extent, but the intention of
+this repo is just to prove out the testing pattern as a whole. If the pattern seems viable then I
+think it would be awesome to see if Jest would consider supporting this first class in the code.
