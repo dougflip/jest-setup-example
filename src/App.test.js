@@ -36,6 +36,15 @@ describe('Monkey patching "it"', () => {
     });
   });
 
+  describe('using the 3 arg form with an async test', () => {
+    const asyncSetup = async () => ({ name: 'Nora' });
+
+    it('provides basic params to a test', asyncSetup, async ({ name }) => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      expect(name).toBe('Nora');
+    });
+  });
+
   describe('using the 3 arg form with setup and teardown', () => {
     const config = {
       setup: () => ({ div: document.createElement('div') }),
