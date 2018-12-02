@@ -29,6 +29,8 @@ const baseIt = global.it;
 const baseOnly = global.it.only;
 const baseSkip = global.it.skip;
 
+const testUsesDoneCallback = test => !!test.useDone;
+
 /**
  * Very simple implementation of calling a test with a setup and teardown configuration.
  * Basically, run the setup, feed the setup result to the test, and then feed the setup result to
@@ -61,6 +63,9 @@ const itWithOptions = jestFn => async (...args) => {
       return itWithSetupAndTearDown(jestFn, title, testFn, setup.setup, setup.teardown);
     }
 
+    if (testUsesDoneCallback(testFn)) {
+      return jestFn(title, async (done) => testFn.testFn(await {...setup(), done}));
+    }
     return jestFn(title, async () => testFn(await setup()));
 };
 
@@ -71,3 +76,10 @@ const itWithOptions = jestFn => async (...args) => {
 it = itWithOptions(baseIt);
 it.only = itWithOptions(baseOnly);
 it.skip = itWithOptions(baseSkip);
+
+/**
+ * A builder-ish function to support using Jest's `done` callback.
+ * You pass your test function and this wraps it in a small object flagging it needs `done`.
+ * The wrapper functions above then know to use `done` when building the callback.
+ */
+global.withDone = testFn => ({ useDone: true, testFn });

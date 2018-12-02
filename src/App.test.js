@@ -45,6 +45,15 @@ describe('Monkey patching "it"', () => {
     });
   });
 
+  describe('using the 3 arg form with a done callback', () => {
+    const setup = () => ({ name: 'Nora' });
+
+    it('provides basic params to a test', setup, withDone(({ done, name }) => {
+      expect(name).toBe('Nora');
+      done();
+    }));
+  });
+
   describe('using the 3 arg form with setup and teardown', () => {
     const config = {
       setup: () => ({ div: document.createElement('div') }),
