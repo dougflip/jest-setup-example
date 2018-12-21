@@ -1,4 +1,12 @@
 /**
+ * A little enzyme setup
+ */
+import { configure } from "enzyme";
+import Adapter from "enzyme-adapter-react-16";
+
+configure({ adapter: new Adapter() });
+
+/**
  * Wraps the existing `it`, `it.only`, and `it.skip` functions.
  * Allows passing 3 args in which case the 2nd arg is one of 2 things:
  * 1. Function
@@ -34,14 +42,22 @@ const baseSkip = global.it.skip;
  * Basically, run the setup, feed the setup result to the test, and then feed the setup result to
  * the teardown function.
  */
-const itWithSetupAndTearDown = async (jestFn, title, testFn, setup, teardown) => {
+const itWithSetupAndTearDown = async (
+  jestFn,
+  title,
+  testFn,
+  setup,
+  teardown
+) => {
   // TODO: This doesn't seem to work with async/await
-  // even though the version other version does?
+  // even though the other version does?
   // need to think through that a little more.
   const params = setup();
-  jestFn(title, async () => testFn(params));
-  teardown(params);
-}
+  jestFn(title, () => {
+    testFn(params);
+    teardown(params);
+  });
+};
 
 /**
  * This is the implementation of the it wrapper.
@@ -50,18 +66,24 @@ const itWithSetupAndTearDown = async (jestFn, title, testFn, setup, teardown) =>
  * If there are 3 args, then we check to see which type of setup you provided and call accordingly.
  */
 const itWithOptions = jestFn => async (...args) => {
-    if (args.length !== 3) {
-        return jestFn(...args);
-    }
+  if (args.length !== 3) {
+    return jestFn(...args);
+  }
 
-    const [title, setup, testFn] = args;
+  const [title, setup, testFn] = args;
 
-    // Very simple check to see if your config is the setup and teardown variety.
-    if (setup.setup && setup.teardown) {
-      return itWithSetupAndTearDown(jestFn, title, testFn, setup.setup, setup.teardown);
-    }
+  // Very simple check to see if your config is the setup and teardown variety.
+  if (setup.setup && setup.teardown) {
+    return itWithSetupAndTearDown(
+      jestFn,
+      title,
+      testFn,
+      setup.setup,
+      setup.teardown
+    );
+  }
 
-    return jestFn(title, async () => testFn(await setup()));
+  return jestFn(title, async () => testFn(await setup()));
 };
 
 /**

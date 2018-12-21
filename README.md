@@ -47,8 +47,19 @@ This repo is a Proof of Concept to see what testing in this manner would look li
 
 ## Test Examples
 
-The examples are in [./src/App.test.js](./src/App.test.js) and runnable via `yarn test`.
-They are basic now, but I hope to add some more complex examples to see how this pattern scales.
+There are a few examples:
+
+- [./src/basics.test.js](./src/basics.test.js) gives an overview of using this approach
+- [./src/enzymeExamplePureSetup.test.js](./src/enzymeExamplePureSetup.test.js)
+  gives a more involved example using enzyme
+- [./src/enzymeExamplePureSetupExternal.test.js](./src/enzymeExamplePureSetupExternal.test.js)
+  shows how easy it is to move all of the setup outside of the test (if you wanted to do that).
+- [./src/enzymeExampleClassic.test.js](./src/enzymeExampleClassic.test.js)
+  shows the same example using `beforeEach` for comparison purposes.
+  Obviously, there would be numerous ways to structure the example, but I tried to model it after
+  patterns I have seen often in actual code.
+
+You can run the tests via `yarn test`.
 
 ## Implementation
 
